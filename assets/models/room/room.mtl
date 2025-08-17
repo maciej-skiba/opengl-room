@@ -1,0 +1,16 @@
+# room.mtl
+newmtl Floor
+illum 2
+Kd 1.000 1.000 1.000
+Ks 0.250 0.250 0.250
+Ns 80.0
+map_Kd wood_diffuse.png
+map_Ks wood_specular.png
+
+newmtl Wall
+illum 2
+Kd 1.000 1.000 1.000
+Ks 0.050 0.050 0.050
+Ns 20.0
+map_Kd stone_diffuse.png
+map_Ks stone_specular.png
