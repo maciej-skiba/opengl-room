@@ -1,4 +1,3 @@
-# room.mtl
 newmtl Floor
 illum 2
 Kd 1.000 1.000 1.000
@@ -12,5 +11,14 @@ illum 2
 Kd 1.000 1.000 1.000
 Ks 0.050 0.050 0.050
 Ns 20.0
-map_Kd stone_diffuse.png
-map_Ks stone_specular.png
+map_Kd bricks_diffuse.png
+map_Ks bricks_specular.png
+
+newmtl Ceiling
+illum 2
+Kd 1.000 1.000 1.000
+Ks 0.020 0.020 0.020
+Ns 10.0
+map_Kd plaster_diffuse.png
+map_Ks plaster_roughness.png
+

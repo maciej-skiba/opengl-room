@@ -4,7 +4,10 @@
 #include "core/InputCallbacks.hpp"
 #include <iostream>
 
-int InitializeOpenGL(GLFWwindow*& window)
+float Window::deltaTime = 0.0f;
+static float lastFrame = 0.0f;
+
+int Window::InitializeOpenGL(GLFWwindow*& window)
 {
     if (!glfwInit()) return -1;
 
@@ -22,7 +25,7 @@ int InitializeOpenGL(GLFWwindow*& window)
     }
 
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetFramebufferSizeCallback(window, Window::framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -30,7 +33,13 @@ int InitializeOpenGL(GLFWwindow*& window)
     return 1;
 }
 
-void framebuffer_size_callback(GLFWwindow*, int width, int height)
+void Window::framebuffer_size_callback(GLFWwindow*, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+void Window::UpdateDeltaTime() {
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
 }
