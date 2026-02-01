@@ -15,6 +15,7 @@
 #include "gfx/MeshUtils.hpp"
 #include "gfx/Model.hpp"
 #include "gfx/Attenuation.hpp"
+#include "gfx/Gui.hpp"
 #include "io/FileLoader.hpp"
 #include "Shader.hpp"
 
@@ -22,13 +23,16 @@ const glm::mat4 identityMatrix = glm::mat4(1.0f);
 extern bool flashlightOn;
 
 int main(void)
-{    GLFWwindow* window;
+{    
+    GLFWwindow* window;
     int initSuccess = 1;
 
     if (Window::InitializeOpenGL(window) != initSuccess)
     {
         return -1;
     }
+
+    Gui::ImGuiInit(window);
 
     stbi_set_flip_vertically_on_load(true);
 
@@ -80,8 +84,43 @@ int main(void)
     float nearClippingPlane = 0.1f;
     float farClippingPlane = 100.0f;
 
-    glm::mat4 boxModelMatrix = identityMatrix;
     glm::mat4 lightModelMatrix = identityMatrix;
+    glm::mat4 projectionMatrix = 
+        glm::perspective(
+            glm::radians(mainCamera->Zoom),
+            aspectRatio, 
+            nearClippingPlane,
+            farClippingPlane);
+
+    roomShader.UseProgram();
+
+    roomShader.SetUniformFloat("attenuation.constant", attenuationData[0].constant);
+    roomShader.SetUniformFloat("attenuation.linear", attenuationData[0].linear);
+    roomShader.SetUniformFloat("attenuation.quadratic", attenuationData[0].quadratic);
+    roomShader.SetUniformMat4("projection", projectionMatrix);
+
+    roomShader.SetUniformVec3("pointLight[0].position", lightPointPositions[0]);
+    roomShader.SetUniformVec3("pointLight[0].ambient", lightPointColors[0] * 0.1f);
+    roomShader.SetUniformVec3("pointLight[0].diffuse", lightPointColors[0]);
+    roomShader.SetUniformVec3("pointLight[0].specular", lightPointColors[0]);
+    roomShader.SetUniformFloat("pointLight[0].lightStrength", 4.0f);
+
+    roomShader.SetUniformVec3("pointLight[1].position", lightPointPositions[1]);
+    roomShader.SetUniformVec3("pointLight[1].ambient", lightPointColors[1] * 0.1f);
+    roomShader.SetUniformVec3("pointLight[1].diffuse", lightPointColors[1]);
+    roomShader.SetUniformVec3("pointLight[1].specular", lightPointColors[1]);
+    roomShader.SetUniformFloat("pointLight[1].lightStrength", 4.0f);
+    
+    roomShader.SetUniformFloat("spotLight[0].cutOff", glm::cos(glm::radians(10.0f)));
+    roomShader.SetUniformFloat("spotLight[0].outerCutOff", glm::cos(glm::radians(12.0f)));
+    roomShader.SetUniformVec3("spotLight[0].ambient", spotLightColor * 0.1f);
+    roomShader.SetUniformVec3("spotLight[0].diffuse", spotLightColor);
+    roomShader.SetUniformVec3("spotLight[0].specular", spotLightColor);
+    roomShader.SetUniformFloat("spotLight[0].lightStrength", 1.0f);
+
+    lightShader.UseProgram();
+
+    lightShader.SetUniformMat4("projection", projectionMatrix);
     
     while (!glfwWindowShouldClose(window))
     {
@@ -91,13 +130,6 @@ int main(void)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glBindVertexArray(lightVAO);
-
-        glm::mat4 projectionMatrix = 
-            glm::perspective(
-                glm::radians(mainCamera->Zoom),
-                aspectRatio, 
-                nearClippingPlane,
-                farClippingPlane);
         
         lightShader.UseProgram();
         
@@ -107,7 +139,6 @@ int main(void)
             lightModelMatrix = glm::scale(lightModelMatrix, glm::vec3(0.5f));
             lightShader.SetUniformMat4("model", lightModelMatrix);
             lightShader.SetUniformMat4("view", mainCamera->GetViewMatrix());
-            lightShader.SetUniformMat4("projection", projectionMatrix);
             lightShader.SetUniformVec3("lightColor", lightPointColors[lightPoint]);
 
             glDrawArrays(GL_TRIANGLES, 0, numOfVerticesInBox);
@@ -115,57 +146,19 @@ int main(void)
         
         roomShader.UseProgram();
 
-        for (size_t i = 0; i < attenuationData.size(); i++) 
-        {
-            std::string base = "attenuations[" + std::to_string(i) + "].";
-
-            glUniform1f(glGetUniformLocation(roomShader.ID, (base + "minDist").c_str()), attenuationData[i].minDist);
-            roomShader.SetUniformFloat(base + "minDist", attenuationData[i].minDist);
-            roomShader.SetUniformFloat(base + "maxDist", attenuationData[i].maxDist);
-            roomShader.SetUniformFloat(base + "constant", attenuationData[i].constant);
-            roomShader.SetUniformFloat(base + "linear", attenuationData[i].linear);
-            roomShader.SetUniformFloat(base + "quadratic", attenuationData[i].quadratic);
-        }
-
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); 
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
         roomShader.SetUniformMat4("model", model);
         roomShader.SetUniformMat4("view", mainCamera->GetViewMatrix());
-        roomShader.SetUniformMat4("projection", projectionMatrix);
         roomShader.SetUniformVec3("cameraPos", mainCamera->Position);
-
-        roomShader.SetUniformVec3("dirLight[0].position", dirLightPosition);
-        roomShader.SetUniformVec3("dirLight[0].ambient", dirLightColor * 0.1f);
-        roomShader.SetUniformVec3("dirLight[0].diffuse", dirLightColor);
-        roomShader.SetUniformVec3("dirLight[0].specular", dirLightColor);
-        roomShader.SetUniformFloat("dirLight[0].lightStrength", 1.0f);
-
-        roomShader.SetUniformVec3("pointLight[0].position", lightPointPositions[0]);
-        roomShader.SetUniformVec3("pointLight[0].ambient", lightPointColors[0] * 0.1f);
-        roomShader.SetUniformVec3("pointLight[0].diffuse", lightPointColors[0]);
-        roomShader.SetUniformVec3("pointLight[0].specular", lightPointColors[0]);
-        roomShader.SetUniformFloat("pointLight[0].lightStrength", 4.0f);
-
-        roomShader.SetUniformVec3("pointLight[1].position", lightPointPositions[1]);
-        roomShader.SetUniformVec3("pointLight[1].ambient", lightPointColors[1] * 0.1f);
-        roomShader.SetUniformVec3("pointLight[1].diffuse", lightPointColors[1]);
-        roomShader.SetUniformVec3("pointLight[1].specular", lightPointColors[1]);
-        roomShader.SetUniformFloat("pointLight[1].lightStrength", 4.0f);
-        
         roomShader.SetUniformVec3("spotLight[0].position", mainCamera->Position);
         roomShader.SetUniformVec3("spotLight[0].direction", mainCamera->Front);
-        roomShader.SetUniformFloat("spotLight[0].cutOff", glm::cos(glm::radians(10.0f)));
-        roomShader.SetUniformFloat("spotLight[0].outerCutOff", glm::cos(glm::radians(12.0f)));
         roomShader.SetUniformBool("spotLight[0].on", flashlightOn);
-        roomShader.SetUniformVec3("spotLight[0].ambient", spotLightColor * 0.1f);
-        roomShader.SetUniformVec3("spotLight[0].diffuse", spotLightColor);
-        roomShader.SetUniformVec3("spotLight[0].specular", spotLightColor);
-        roomShader.SetUniformFloat("spotLight[0].lightStrength", 1.0f);
-
 
         ourModel.Draw(roomShader);
 
+        Gui::ImGuiFrame(window);
         glfwSwapBuffers(window);
         ProcessInput(window, mainCamera.get());
         mainCamera->updateCameraVectors();
@@ -173,5 +166,6 @@ int main(void)
     }
 
     glfwTerminate();
+    Gui::ImGuiShutdown();
     return 0;
 }

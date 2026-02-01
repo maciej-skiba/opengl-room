@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <unordered_map>
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -16,6 +17,8 @@ class Shader
 {
 public:
     unsigned int ID;
+
+    mutable std::unordered_map<std::string, GLint> uniformLocationCache;
 
     Shader(const char* vertexPath, const char* fragmentPath)
     {
@@ -60,33 +63,24 @@ public:
         glUseProgram(ID); 
     }
 
-    void SetUniformBool(const std::string &name, bool value) const
-    {         
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value); 
+    void SetUniformBool(const std::string &name, bool value) const {
+        glUniform1i(GetUniformLocation(name), (int)value);
     }
 
-    void SetUniformInt(const std::string &name, int value) const
-    { 
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), value); 
+    void SetUniformInt(const std::string &name, int value) const {
+        glUniform1i(GetUniformLocation(name), value);
     }
 
-    void SetUniformFloat(const std::string &name, float value) const
-    { 
-        glUniform1f(glGetUniformLocation(ID, name.c_str()), value); 
+    void SetUniformFloat(const std::string &name, float value) const {
+        glUniform1f(GetUniformLocation(name), value);
     }
 
-    void SetUniformMat4(const std::string &name, glm::mat4 value) const
-    { 
-        glUniformMatrix4fv(
-            glGetUniformLocation(
-                ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value)); 
+    void SetUniformMat4(const std::string &name, const glm::mat4& value) const {
+        glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
     }
 
-    void SetUniformVec3(const std::string &name, glm::vec3 value) const
-    { 
-        glUniform3fv(
-            glGetUniformLocation(
-                ID, name.c_str()), 1, glm::value_ptr(value)); 
+    void SetUniformVec3(const std::string &name, const glm::vec3& value) const {
+        glUniform3fv(GetUniformLocation(name), 1, glm::value_ptr(value));
     }
 
 private:
@@ -114,5 +108,14 @@ private:
             glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
             std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
         }
+    }
+
+    GLint GetUniformLocation(const std::string& name) const {
+        if (uniformLocationCache.find(name) != uniformLocationCache.end())
+            return uniformLocationCache[name];
+
+        GLint location = glGetUniformLocation(ID, name.c_str());
+        uniformLocationCache[name] = location;
+        return location;
     }
 };

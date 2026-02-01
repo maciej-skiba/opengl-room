@@ -64,7 +64,7 @@ uniform vec3 cameraPos;
 uniform DirLight dirLight[NUM_OF_DIR_LIGHTS];
 uniform PointLight pointLight[NUM_OF_POINT_LIGHTS];
 uniform SpotLight spotLight[NUM_OF_SPOT_LIGHTS];
-uniform Attenuation attenuations[NUM_OF_ATTENUATIONS];
+uniform Attenuation attenuation;
 
 float shininess = 48.0f;
 
@@ -79,16 +79,17 @@ void main()
     vec3 cameraDir = normalize(cameraPos - fragPos);
     vec3 result = vec3(0);
 
+    /*
     for (int dirLightIndex = 0; dirLightIndex < NUM_OF_DIR_LIGHTS; dirLightIndex++)
     {
-        //result += CalcDirLight(dirLight[dirLightIndex], norm, cameraDir);
+        result += CalcDirLight(dirLight[dirLightIndex], norm, cameraDir);
     }
-
+    */
     for (int pointLightIndex = 0; pointLightIndex < NUM_OF_POINT_LIGHTS; pointLightIndex++)
     {
         result += CalcPointLight(pointLight[pointLightIndex], norm, fragPos, cameraDir);
     }
-
+ 
     for (int spotLightIndex = 0; spotLightIndex < NUM_OF_SPOT_LIGHTS; spotLightIndex++)
     {
         result += CalcSpotLight(spotLight[spotLightIndex], norm, fragPos, cameraDir);
@@ -172,22 +173,5 @@ vec3 CalcSpotLight(SpotLight spotLight, vec3 normal, vec3 fragPos, vec3 viewDir)
 
 float GetAttenuation(float distance)
 {
-    Attenuation attForDistance;
-    for (int attIndex = 0; attIndex < NUM_OF_ATTENUATIONS; attIndex++) 
-    {
-        if (distance >= attenuations[attIndex].minDist && distance < attenuations[attIndex].maxDist) 
-        {
-            attForDistance = attenuations[attIndex];
-            break;
-        }
-        else 
-        {
-            if (attIndex == NUM_OF_ATTENUATIONS - 1)
-            {
-                attForDistance = attenuations[NUM_OF_ATTENUATIONS - 1];
-            }
-        }
-    }
-
-    return 1.0 / (attForDistance.constant + attForDistance.linear * distance + attForDistance.quadratic * (distance * distance));
+    return 1.0 / (attenuation.constant + attenuation.linear * distance + attenuation.quadratic * (distance * distance));
 }

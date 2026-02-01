@@ -164,7 +164,8 @@ public:
             case UP:
             {
                 glm::vec3 next = targetPosition + Up * velocity;
-                if (next.y < roomHeight - margin)
+                if (next.y < roomHeight - margin && next.x < roomHalfSize - margin && next.x > -roomHalfSize + margin &&
+                    next.z < roomHalfSize - margin && next.z > -roomHalfSize + margin)
                 {
                     proposed = next;
                 }
@@ -173,7 +174,8 @@ public:
             case DOWN:
             {
                 glm::vec3 next = targetPosition - Up * velocity;
-                if (next.y > margin)
+                if (next.y > margin && next.x < roomHalfSize - margin && next.x > -roomHalfSize + margin &&
+                    next.z < roomHalfSize - margin && next.z > -roomHalfSize + margin)
                 {
                     proposed = next;
                 }
