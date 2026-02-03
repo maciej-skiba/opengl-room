@@ -23,7 +23,8 @@ int Window::InitializeOpenGL(GLFWwindow*& window)
     if (glewInit() != GLEW_OK) {
         std::cout << "cant load glew\n";
     }
-
+    
+    glfwSwapInterval(0); // VSync OFF
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, Window::framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);

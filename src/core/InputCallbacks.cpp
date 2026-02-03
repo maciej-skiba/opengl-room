@@ -23,7 +23,7 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
     float yoffset = lastY - ypos; // reversed
     lastX = xpos; lastY = ypos;
 
-    camera->ProcessMouseMovement(xoffset, yoffset);
+    camera->AddMouseDelta(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow* window, double, double yoffset)

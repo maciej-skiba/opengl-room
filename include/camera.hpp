@@ -20,7 +20,7 @@ enum Camera_Movement {
 const float defaultYaw         = -45.0f;
 const float defaultPitch       =  0.0f;
 const float defaultSpeed       =  4.0f;
-const float defaultSensitivity =  1.0f;
+const float defaultSensitivity =  0.3f;
 const float defaultZoom        =  45.0f;
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
@@ -41,7 +41,6 @@ public:
     float MouseSensitivity;
     float Zoom;
     float targetYaw, targetPitch;
-    float mouseSmoothingStrength = 16.0f;
     glm::vec3 targetPosition;
     float moveSmoothing = 0.1f;
 
@@ -189,24 +188,16 @@ public:
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-    void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
+    void AddMouseDelta(float xoffset, float yoffset, GLboolean constrainPitch = true)
     {
-        xoffset *= MouseSensitivity;
-        yoffset *= MouseSensitivity;
-
-        targetYaw   = Yaw + xoffset;
-        targetPitch = Pitch + yoffset;
+        targetYaw += xoffset * MouseSensitivity;
+        targetPitch += yoffset * MouseSensitivity;
 
         // make sure that when pitch is out of bounds, screen doesn't get flipped
         if (constrainPitch)
         {
-            if (targetPitch > 89.0f)
-                targetPitch = 89.0f;
-            if (targetPitch < -89.0f)
-                targetPitch = -89.0f;
+            targetPitch = glm::clamp(targetPitch, -89.0f, 89.0f);
         }
-
-        updateCameraVectors();
     }
 
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
@@ -223,14 +214,17 @@ public:
     void updateCameraVectors()
     {
         // calculate the new Front vector
-        float mouseSmoothing = 1.0f - exp(Window::deltaTime * (-mouseSmoothingStrength));
+        float mouseSmoothing = 20 * Window::deltaTime;
+
         Yaw = glm::mix(Yaw, targetYaw, mouseSmoothing);
         Pitch = glm::mix(Pitch, targetPitch, mouseSmoothing);
+
         glm::vec3 front;
         front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
         front.y = sin(glm::radians(Pitch));
         front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
         Front = glm::normalize(front);
+
         // also re-calculate the Right and Up vector
         Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
         Up    = glm::normalize(glm::cross(Right, Front));
