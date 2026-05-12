@@ -3,7 +3,7 @@
 <img width="790" height="571" alt="opengl-room" src="https://github.com/user-attachments/assets/46cf2e26-a0be-4b5e-aa7b-89829685869d" />
 <br/>
 <h2>
-  A real-time 3D scene using OpenGL and C++
+  A real-time OpenGL (C++) 3D scene with Phong reflection model
 </h2>
 <ul>
   <li>
