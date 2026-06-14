@@ -129,7 +129,9 @@ std::vector<Texture> Model::loadTexturesOfSingleMaterial(aiMaterial *mat, aiText
         if (!skip)
         {
             Texture texture;
-            texture.id = loadTextureFromFile(str.C_Str(), directory);
+            std::cout << "Loading texture of type: " << (int)type << std::endl;
+            bool correctGamma = type == aiTextureType_DIFFUSE;
+            texture.id = loadTextureFromFile(str.C_Str(), directory, type);
             texture.type = typeName;
             texture.path = str.C_Str();
             textures.push_back(texture);
@@ -140,7 +142,7 @@ std::vector<Texture> Model::loadTexturesOfSingleMaterial(aiMaterial *mat, aiText
     return textures;
 }
 
-unsigned int Model::loadTextureFromFile(const char *path, const std::string &directory)
+unsigned int Model::loadTextureFromFile(const char *path, const std::string &directory, aiTextureType type)
 {
     std::string filename = std::string(path);
     filename = directory + '/' + filename;
@@ -152,16 +154,33 @@ unsigned int Model::loadTextureFromFile(const char *path, const std::string &dir
     unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
-        GLenum format;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
+    GLenum internalFormat = GL_RGB;
+    GLenum format = GL_RGB;
+
+    if (nrComponents == 1)
+    {
+        internalFormat = GL_RED;
+        format = GL_RED;
+    }
+    else if (nrComponents == 3)
+    {
+        internalFormat = type == aiTextureType_DIFFUSE ? GL_SRGB : GL_RGB;
+        format = GL_RGB;
+    }
+    else if (nrComponents == 4)
+    {
+        internalFormat = type == aiTextureType_DIFFUSE ? GL_SRGB_ALPHA : GL_RGBA;
+        format = GL_RGBA;
+    }
+    else
+    {
+        std::cout << "Unsupported texture component count: " << nrComponents << " at " << filename << std::endl;
+        stbi_image_free(data);
+        return 0;
+    }
 
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

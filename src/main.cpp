@@ -62,12 +62,10 @@ int main(void)
     };
 
     glm::vec3 lightPointColors[] = {
-        glm::vec3(1, 0.275, 0.855), //pink
-        glm::vec3(0.271, 0.808, 1)  //cyan
-    };
+        glm::vec3(2.5f, 0.550f, 2.15f), //pink
++        glm::vec3(0.7f, 2.0f, 2.5f)  //cyan
+   };
     
-    glm::vec3 dirLightPosition = glm::vec3(20.0f, 20.0f, 0.0f);
-
     int lightBufferSize = numOfVerticesInBox * 6;
     CreateLightVao(lightVAO, lightBoxVertices, lightBufferSize);
 
@@ -103,13 +101,13 @@ int main(void)
     roomShader.SetUniformVec3("pointLight[0].ambient", lightPointColors[0] * 0.1f);
     roomShader.SetUniformVec3("pointLight[0].diffuse", lightPointColors[0]);
     roomShader.SetUniformVec3("pointLight[0].specular", lightPointColors[0]);
-    roomShader.SetUniformFloat("pointLight[0].lightStrength", 4.0f);
+    roomShader.SetUniformFloat("pointLight[0].lightStrength", 0.6f);
 
     roomShader.SetUniformVec3("pointLight[1].position", lightPointPositions[1]);
     roomShader.SetUniformVec3("pointLight[1].ambient", lightPointColors[1] * 0.1f);
     roomShader.SetUniformVec3("pointLight[1].diffuse", lightPointColors[1]);
     roomShader.SetUniformVec3("pointLight[1].specular", lightPointColors[1]);
-    roomShader.SetUniformFloat("pointLight[1].lightStrength", 4.0f);
+    roomShader.SetUniformFloat("pointLight[1].lightStrength", 0.6f);
     
     roomShader.SetUniformFloat("spotLight[0].cutOff", glm::cos(glm::radians(10.0f)));
     roomShader.SetUniformFloat("spotLight[0].outerCutOff", glm::cos(glm::radians(12.0f)));

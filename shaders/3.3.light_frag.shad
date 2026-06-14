@@ -4,5 +4,14 @@ in vec3 ourColor;
 
 void main()
 {
-    FragColor = vec4(ourColor.rgb, 1.0f);
+    float exposure = 0.5f;
+
+    const float gamma = 1.0;
+  
+    // exposure tone mapping
+    vec3 mapped = vec3(1.0) - exp(-ourColor * exposure);
+    // gamma correction 
+    mapped = pow(mapped, vec3(1.0 / gamma));
+    
+    FragColor = vec4(mapped, 1.0);
 }

@@ -28,7 +28,7 @@ class Model
         void loadIndices(aiMesh *mesh, std::vector<unsigned int> *indices);
         void loadTextures(aiMesh *mesh, const aiScene *scene, std::vector<Texture> *textures);
         std::vector<Texture> loadTexturesOfSingleMaterial(aiMaterial *mat, aiTextureType type, std::string typeName);
-        unsigned int loadTextureFromFile(const char *path, const std::string &directory);
+        unsigned int loadTextureFromFile(const char *path, const std::string &directory, aiTextureType type);
 
         void processNode(aiNode *node, const aiScene *scene);
         Mesh processMesh(aiMesh *mesh, const aiScene *scene);

@@ -66,7 +66,7 @@ uniform PointLight pointLight[NUM_OF_POINT_LIGHTS];
 uniform SpotLight spotLight[NUM_OF_SPOT_LIGHTS];
 uniform Attenuation attenuation;
 
-float shininess = 48.0f;
+float shininess = 64.0f;
 
 vec3 CalcDirLight(DirLight dirLight, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -79,12 +79,6 @@ void main()
     vec3 cameraDir = normalize(cameraPos - fragPos);
     vec3 result = vec3(0);
 
-    /*
-    for (int dirLightIndex = 0; dirLightIndex < NUM_OF_DIR_LIGHTS; dirLightIndex++)
-    {
-        result += CalcDirLight(dirLight[dirLightIndex], norm, cameraDir);
-    }
-    */
     for (int pointLightIndex = 0; pointLightIndex < NUM_OF_POINT_LIGHTS; pointLightIndex++)
     {
         result += CalcPointLight(pointLight[pointLightIndex], norm, fragPos, cameraDir);
@@ -93,26 +87,14 @@ void main()
     for (int spotLightIndex = 0; spotLightIndex < NUM_OF_SPOT_LIGHTS; spotLightIndex++)
     {
         result += CalcSpotLight(spotLight[spotLightIndex], norm, fragPos, cameraDir);
-    }
+    }   
 
-    FragColor = vec4(result, 1.0f);
-}
+    float exposure = 0.8;
 
-vec3 CalcDirLight(DirLight dirLight, vec3 normal, vec3 viewDir)
-{
-    vec3 ambient = dirLight.ambient * vec3(texture(texture_diffuse1, texCoord));
+    vec3 mapped = vec3(1.0) - exp(-result * exposure);
+    mapped = pow(mapped, vec3(1.0 / 2.2));
 
-    vec3 lightDirection = normalize(dirLight.position - fragPos);
-    float diffuseStrength = max(dot(normal, lightDirection), 0.0f) * dirLight.lightStrength;
-    vec3 diffuse = dirLight.diffuse * diffuseStrength * vec3(texture(texture_diffuse1, texCoord));
-
-    float roughness = texture(texture_specular1, texCoord).r;
-    float glossiness = 1.0f - roughness;
-    vec3 reflectedLight = reflect(-lightDirection, normal);
-    float spec = pow(max(dot(reflectedLight, viewDir), 0.0f), shininess);
-    vec3 specular = dirLight.specular * glossiness * spec;
-
-    return ambient + diffuse + specular;
+    FragColor = vec4(mapped, 1.0);
 }
 
 vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir)
@@ -125,15 +107,20 @@ vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewD
     float diffuseStrength = max(dot(normal, lightDirection), 0.0f) * pointLight.lightStrength;
     vec3 diffuse = pointLight.diffuse * diffuseStrength * vec3(texture(texture_diffuse1, texCoord));
 
-    float roughness = texture(texture_specular1, texCoord).r;
-    float glossiness = 1.0f - roughness;
-    vec3 reflectedLight = reflect(-lightDirection, normal);
-    float spec = pow(max(dot(reflectedLight, viewDir), 0.0f), shininess);
-    vec3 specular = pointLight.specular * glossiness * spec;
+    /* OLD: Classic Phong specular
+        vec3 reflectedLight = reflect(-lightDirection, normal);
+        float spec = pow(max(dot(reflectedLight, viewDir), 0.0f), shininess);
+    */
+
+    vec3 halfwayDir = normalize(lightDirection + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+    
+    vec3 specularMap = texture(texture_specular1, texCoord).rgb;
+    vec3 specular = pointLight.specular * specularMap * spec * pointLight.lightStrength;
 
     ambient *= attenuation;
     diffuse *= attenuation;
-    specular *= sqrt(attenuation);
+    specular *= attenuation;
 
     return ambient + diffuse + specular;
 }
@@ -160,8 +147,14 @@ vec3 CalcSpotLight(SpotLight spotLight, vec3 normal, vec3 fragPos, vec3 viewDir)
 
     float roughness = texture(texture_specular1, texCoord).r;
     float glossiness = 1.0f - roughness;
-    vec3 reflectedLight = reflect(-lightToFragDir, normal);
-    float spec = pow(max(dot(reflectedLight, viewDir), 0.0f), shininess);
+ 
+    /* OLD: Classic Phong specular
+        vec3 reflectedLight = reflect(-lightDirection, normal);
+        float spec = pow(max(dot(reflectedLight, viewDir), 0.0f), shininess);
+    */
+
+    vec3 halfwayDir = normalize(-lightToFragDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
     vec3 specular = spotLight.specular * glossiness * spec;
 
     ambient *= attenuation;
