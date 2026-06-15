@@ -11,7 +11,7 @@
     Built an FPS-style camera system with keyboard and mouse controls
   </li>
   <li>
-    Implemented Blinn-Phong lighting with directional, point and spotlight sources
+    Implemented Blinn-Phong lighting with point and spotlight sources
   </li>
   <li>
     Added textured materials using diffuse and specular maps with stb_image
@@ -20,9 +20,6 @@
     Loaded external 3D models using Assimp with custom Mesh and Model abstractions
   </li>
   <li>
-    Implemented HDR bloom post-processing using bright-pass extraction, ping-pong framebuffers and separable Gaussian blur
-  </li>
-  <li>
-    Built with CMake and modern C++
+    Implemented HDR Bloom post-processing using ping-pong framebuffers and Gaussian blur
   </li>
 </ul>
