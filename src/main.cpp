@@ -285,7 +285,7 @@ int main(void)
         glBindVertexArray(lightBoxVao);
         
         lightBoxShader.UseProgram();
-        lightBoxShader.SetUniformFloat("emissionStrength", 3.0f);
+        lightBoxShader.SetUniformFloat("emissionStrength", 1.8f);
         
         for (int lightPoint = 0; lightPoint < amountOfLightPoints; lightPoint++)
         {
