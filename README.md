@@ -1,7 +1,6 @@
 <h1>OpenGL "Room"</h1>
 <br/>
-<img width="915" height="609" alt="image" src="https://github.com/user-attachments/assets/a4ea2398-77b6-49da-b1b5-c56515bbf0ee" />
-
+<img width="1189" height="757" alt="image" src="https://github.com/user-attachments/assets/9e79348f-7009-41f5-be8a-4b5678928568" />
 <br/>
 <h2>
   Real-time OpenGL (C++) renderer with Blinn-Phong lighting and bloom post-processing
