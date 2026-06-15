@@ -1,3 +1,3 @@
 #pragma once
-inline constexpr int WINDOW_WIDTH  = 800;
-inline constexpr int WINDOW_HEIGHT = 600;
+inline constexpr int WINDOW_WIDTH  = 1200;
+inline constexpr int WINDOW_HEIGHT = 800;

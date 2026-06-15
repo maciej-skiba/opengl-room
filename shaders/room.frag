@@ -55,7 +55,8 @@ in vec3 normal;
 in vec3 fragPos;
 in vec2 texCoord;
 
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
@@ -65,6 +66,9 @@ uniform DirLight dirLight[NUM_OF_DIR_LIGHTS];
 uniform PointLight pointLight[NUM_OF_POINT_LIGHTS];
 uniform SpotLight spotLight[NUM_OF_SPOT_LIGHTS];
 uniform Attenuation attenuation;
+
+uniform bool hasBloom;
+uniform float emissionStrength;
 
 float shininess = 64.0f;
 
@@ -89,12 +93,28 @@ void main()
         result += CalcSpotLight(spotLight[spotLightIndex], norm, fragPos, cameraDir);
     }   
 
-    float exposure = 0.8;
+    FragColor = vec4(result, 1.0);
 
-    vec3 mapped = vec3(1.0) - exp(-result * exposure);
-    mapped = pow(mapped, vec3(1.0 / 2.2));
+    // BrightColor is separate texture used later for blur.
+    vec3 bright = vec3(0.0);
 
-    FragColor = vec4(mapped, 1.0);
+    if (hasBloom)
+    {
+        bright = result * emissionStrength;
+    }
+    else
+    {
+        // Optional threshold extraction for very bright non-emissive pixels.
+        // Usually with normal LDR colors this stays black.
+        float brightness = dot(result, vec3(0.2126, 0.7152, 0.0722));
+
+        if (brightness > 1.0)
+        {
+            bright = result;
+        }
+    }
+
+    BrightColor = vec4(bright, 1.0);
 }
 
 vec3 CalcPointLight(PointLight pointLight, vec3 normal, vec3 fragPos, vec3 viewDir)

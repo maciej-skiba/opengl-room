@@ -129,7 +129,7 @@ std::vector<Texture> Model::loadTexturesOfSingleMaterial(aiMaterial *mat, aiText
         if (!skip)
         {
             Texture texture;
-            std::cout << "Loading texture of type: " << (int)type << std::endl;
+            //std::cout << "Loading texture of type: " << (int)type << std::endl;
             bool correctGamma = type == aiTextureType_DIFFUSE;
             texture.id = loadTextureFromFile(str.C_Str(), directory, type);
             texture.type = typeName;
